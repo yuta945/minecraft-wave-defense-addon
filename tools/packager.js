@@ -173,13 +173,21 @@ ${assets.map((a) => `- **${a.name || a.id}**: Unique custom item with visual eff
 // 5. メインパッケージング処理
 // ==============================================================================
 async function packageAddon() {
-  console.log("=== [Packager] Starting Marketplace Release Packaging ===");
+  const targetGame = process.argv[2] || "wave-defense";
+  const gameDir = fs.existsSync(path.join(ROOT_DIR, "games", targetGame))
+    ? path.join(ROOT_DIR, "games", targetGame)
+    : ROOT_DIR;
+
+  console.log(`=== [Packager] Starting Release Packaging for [${targetGame}] ===`);
 
   fs.mkdirSync(DIST_DIR, { recursive: true });
   fs.mkdirSync(MARKETING_DIR, { recursive: true });
 
   // 1. ピクセルデータの収集
-  const pixelDataDir = path.join(ROOT_DIR, "assets", "pixel-data");
+  const pixelDataDir = fs.existsSync(path.join(gameDir, "assets", "pixel-data"))
+    ? path.join(gameDir, "assets", "pixel-data")
+    : path.join(ROOT_DIR, "assets", "pixel-data");
+
   const assets = [];
   if (fs.existsSync(pixelDataDir)) {
     const files = fs.readdirSync(pixelDataDir).filter((f) => f.endsWith(".json"));
@@ -191,8 +199,9 @@ async function packageAddon() {
   }
 
   // 2. pack_icon.png の生成
-  const packIconPath = path.join(ROOT_DIR, "pack_icon.png");
+  const packIconPath = path.join(gameDir, "pack_icon.png");
   generatePackIcon(assets[0], packIconPath);
+  fs.copyFileSync(packIconPath, path.join(ROOT_DIR, "pack_icon.png"));
 
   // 3. 一時ビルド・ステージング
   const stagingBpDir = path.join(DIST_DIR, "staging_bp");
@@ -201,7 +210,11 @@ async function packageAddon() {
   fs.mkdirSync(stagingRpDir, { recursive: true });
 
   // BPコピー
-  fs.copyFileSync(path.join(ROOT_DIR, "manifest.json"), path.join(stagingBpDir, "manifest.json"));
+  const manifestPath = fs.existsSync(path.join(gameDir, "manifest.json"))
+    ? path.join(gameDir, "manifest.json")
+    : path.join(ROOT_DIR, "manifest.json");
+
+  fs.copyFileSync(manifestPath, path.join(stagingBpDir, "manifest.json"));
   fs.copyFileSync(packIconPath, path.join(stagingBpDir, "pack_icon.png"));
 
   const bpScriptsDir = path.join(stagingBpDir, "scripts");

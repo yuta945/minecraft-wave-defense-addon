@@ -369,8 +369,25 @@ function generateProposalBoard(assetEntries, outputPath) {
 // 6. メイン実行処理
 // ==============================================================================
 async function main() {
-  const pixelDataDir = path.join(__dirname, "..", "assets", "pixel-data");
-  const texturesItemDir = path.join(__dirname, "..", "textures", "items");
+  const targetGame = process.argv[2] || "wave-defense";
+  const gameDir = fs.existsSync(path.join(__dirname, "..", "games", targetGame))
+    ? path.join(__dirname, "..", "games", targetGame)
+    : path.resolve(__dirname, "..");
+
+  const pixelDataDir = fs.existsSync(path.join(gameDir, "assets", "pixel-data"))
+    ? path.join(gameDir, "assets", "pixel-data")
+    : path.join(__dirname, "..", "assets", "pixel-data");
+
+  const texturesItemDir = path.join(gameDir, "textures", "items");
+  if (!fs.existsSync(texturesItemDir)) {
+    fs.mkdirSync(texturesItemDir, { recursive: true });
+  }
+
+  const rootTexturesDir = path.join(__dirname, "..", "textures", "items");
+  if (!fs.existsSync(rootTexturesDir)) {
+    fs.mkdirSync(rootTexturesDir, { recursive: true });
+  }
+
   const proposalPath = path.join(__dirname, "..", "docs", "screenshots", "ui_proposal.png");
 
   if (!fs.existsSync(pixelDataDir)) {
@@ -380,7 +397,7 @@ async function main() {
 
   const files = fs.readdirSync(pixelDataDir).filter((f) => f.endsWith(".json"));
   if (files.length === 0) {
-    console.log("[PixelEngine] No JSON asset files found in assets/pixel-data/");
+    console.log(`[PixelEngine] No JSON asset files found in ${pixelDataDir}`);
     return;
   }
 
@@ -392,9 +409,12 @@ async function main() {
       const data = JSON.parse(fs.readFileSync(filePath, "utf8"));
       const png = renderPixelGrid(data.grid, data.palette);
 
-      // リソースパックのアイテムテクスチャへ出力
+      // リソースパックのアイテムテクスチャへ出力 (ゲーム内 & ルート両方)
       const outPngPath = path.join(texturesItemDir, `${data.id}.png`);
       fs.writeFileSync(outPngPath, PNG.sync.write(png));
+
+      const rootPngPath = path.join(rootTexturesDir, `${data.id}.png`);
+      fs.writeFileSync(rootPngPath, PNG.sync.write(png));
       console.log(`[PixelEngine] Exported texture: ${outPngPath}`);
 
       renderedAssets.push({

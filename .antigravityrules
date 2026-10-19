@@ -72,3 +72,23 @@
 - **実機スクリーンショット**: `powershell -ExecutionPolicy Bypass -File tools/capture-mc.ps1`（または `npm run screenshot`）
 - **マーケットパッケージャー**: `node tools/packager.js`（または `npm run package`）
 - **自律テストランナー**: `powershell -ExecutionPolicy Bypass -File tools/test-addon.ps1`（または `npm test`）
+
+---
+
+## 5. マルチゲーム・アドオン分離規約 (Multi-Game Architecture)
+
+本プロジェクトでは複数のミニゲームやアドオンを並行管理・拡張するため、**「ゲームごとの独立ディレクトリ分離」** を厳格に適用します：
+
+1. **ディレクトリ分離の原則**:
+   - すべてのゲーム・アドオンは `games/<game-id>/` 配下に完全に独立したフォルダを作成して管理すること。
+   - 例: モンスター襲撃防衛戦アドオン ➔ `games/wave-defense/`
+   - 各ゲームフォルダ内に `src/`（スクリプト）、`assets/`（ドット絵JSON）、`textures/`（テクスチャPNG）、`structures/`（構造体）、`manifest.json`、`README.md` を完結して配置すること。
+   - リポジトリ直下に単一ゲーム固有のコードやアセットを直接散らかしてはならない。
+
+2. **共通開発基盤とマルチゲームビルド**:
+   - `build.js`、`tools/`（BDSランナー、テストランナー、ピクセルエンジン、パッケージャー）は全ゲーム共通の基盤として設計すること。
+   - コマンド指定で対象ゲームを切り替えてビルド・テスト・パッケージングを実行すること：
+     - ビルド: `node build.js <game-id>` (デフォルト: `wave-defense`)
+     - テスト: `powershell tools/test-addon.ps1 -GameName <game-id>`
+     - パッケージャー: `node tools/packager.js <game-id>`
+     - ピクセル生成: `node tools/pixel-engine.js <game-id>`

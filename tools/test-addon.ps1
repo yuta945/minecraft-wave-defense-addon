@@ -6,8 +6,12 @@
 # 4. ログ監視 & 自己判定
 # ==============================================================================
 
-Write-Host "=== [1/4] Building and Deploying Addon ===" -ForegroundColor Cyan
-node build.js
+param (
+    [string]$GameName = "wave-defense"
+)
+
+Write-Host "=== [1/4] Building and Deploying Addon [$GameName] ===" -ForegroundColor Cyan
+node build.js $GameName
 if ($LASTEXITCODE -ne 0) {
     Write-Error "Build failed with exit code $LASTEXITCODE"
     exit 1
