@@ -81,6 +81,15 @@ async function build() {
     if (fs.existsSync(BDS_DIR)) {
       await deployTo(BDS_ADDON_DIR);
 
+      const bdsDevBpDir = path.join(BDS_DIR, "development_behavior_packs", "vibe_addon");
+      await deployTo(bdsDevBpDir);
+
+      // structures を BDS ルート直下にも同期
+      const structuresSrc = path.join(__dirname, "structures");
+      if (fs.existsSync(structuresSrc)) {
+        copyFolderRecursiveSync(structuresSrc, path.join(BDS_DIR, "structures"));
+      }
+
       // BDSのデフォルトワールド（worlds/Bedrock level）にも適用設定を作成
       fs.mkdirSync(BDS_WORLD_BP_DIR, { recursive: true });
       const worldBpJson = path.join(BDS_WORLD_BP_DIR, "world_behavior_packs.json");
@@ -93,7 +102,7 @@ async function build() {
       ];
       fs.writeFileSync(worldBpJson, JSON.stringify(packConfig, null, 2));
 
-      console.log(`[Build] Deployed to BDS: ${BDS_ADDON_DIR}`);
+      console.log(`[Build] Deployed to BDS: ${BDS_ADDON_DIR} & ${bdsDevBpDir}`);
     }
 
     console.log("[Build] Build and dual-deployment completed successfully!");

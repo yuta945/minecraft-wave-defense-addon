@@ -65,6 +65,43 @@ gametest
   .maxTicks(100)
   .structureName("gametests:mediumglass");
 
+gametest
+  .register("ai", "wave_bot_combat", (test) => {
+    aiDebugLog("GameTest wave_bot_combat started!");
+
+    // 1. 仮想プレイヤー（SimulatedPlayer）を召喚
+    const bot = test.spawnSimulatedPlayer({ x: 1, y: 1, z: 1 }, "WaveHeroBot");
+    test.assert(bot !== undefined, "Failed to spawn WaveHeroBot");
+
+    // 2. 特殊武器（烈火の剣）を生成し、ボットに付与
+    const flameDef = WEAPON_REGISTRY["flame_sword"];
+    const sword = createWeaponItem(flameDef, 1);
+    bot.giveItem(sword, true);
+
+    // 3. モンスターを召喚
+    const zombie = test.spawn("minecraft:zombie", { x: 1, y: 1, z: 2 });
+    test.assert(zombie !== undefined, "Failed to spawn zombie in test");
+
+    // 4. 仮想プレイヤーがモンスターを攻撃
+    test.runAfterDelay(10, () => {
+      bot.attackEntity(zombie);
+      aiDebugLog("WaveHeroBot attacked zombie with Flame Sword!");
+    });
+
+    // 5. コイン付与＆所持金検証
+    test.runAfterDelay(25, () => {
+      givePlayerCoins(bot, 20);
+      const coins = getPlayerCoins(bot);
+      aiDebugLog(`WaveHeroBot coin balance: ${coins} C`);
+      test.assert(coins >= 20, "Bot should have at least 20 coins");
+
+      aiDebugLog("GameTest wave_bot_combat succeeded completely!");
+      test.succeed();
+    });
+  })
+  .maxTicks(100)
+  .structureName("gametests:mediumglass");
+
 // ============================================================================
 // スクリプトイベントリスナー (/scriptevent)
 // ============================================================================
