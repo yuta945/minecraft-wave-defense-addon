@@ -1,0 +1,15 @@
+# Dependencies
+node_modules/
+
+# Staging temp folders
+dist/staging_addon/
+dist/staging_bp/
+dist/staging_rp/
+
+# Local BDS server binary and logs
+server/
+*.log
+
+# OS files
+Thumbs.db
+.DS_Store
